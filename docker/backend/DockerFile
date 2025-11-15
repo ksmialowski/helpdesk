@@ -1,0 +1,49 @@
+FROM php:8.2-fpm
+
+WORKDIR /var/www/backend/
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    default-mysql-client \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    autoconf \
+    pkg-config \
+    libzip-dev \
+    zlib1g-dev \
+    libssl-dev \
+    libsasl2-dev \
+    libonig-dev \
+    libcurl4-openssl-dev \
+    ca-certificates \
+    supervisor \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-install pdo_mysql zip exif pcntl gd bcmath sockets
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+# Supervisor
+RUN mkdir -p /var/log/supervisor /etc/supervisor/conf.d
+COPY ./docker/backend/supervisor/supervisord.conf /etc/supervisord.conf
+
+# User
+RUN groupadd -g 1000 www \
+    && useradd -u 1000 -ms /bin/bash -g www www \
+    && chown -R www:www /var/www/backend /var/log/supervisor
+
+USER www
+
+CMD ["/usr/bin/supervisord", "-n"]
+
