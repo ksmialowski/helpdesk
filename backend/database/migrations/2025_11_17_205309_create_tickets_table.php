@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('priority', ['low', 'medium', 'high']);
-            $table->enum('status', ['open', 'in_progress', 'closed']);
+            $table->string('priority');
+            $table->string('status');
             $table->foreignId('assignee_id')->nullable()->constrained('users');
             $table->timestamps();
         });
