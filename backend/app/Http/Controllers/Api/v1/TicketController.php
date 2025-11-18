@@ -17,10 +17,16 @@ use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Ticket::class, 'ticket');
+    }
+
     public function index(IndexTicketRequest $request): AnonymousResourceCollection
     {
         $tickets = Ticket::query()
             ->with(['assignee', 'tags'])
+            ->visibleForUser(Auth::user())
             ->when($request->validated('status'), fn($q, $status) => $q->status($status))
             ->when($request->validated('priority'), fn($q, $priority) => $q->priority($priority))
             ->when($request->validated('tags'), fn($q, $tags) => $q->tags(explode(',', $tags)))

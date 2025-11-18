@@ -48,4 +48,9 @@ class Ticket extends Model
     {
         return $query->whereHas('tags', fn(Builder $q) => $q->whereIn('name', $tags));
     }
+
+    public function scopeVisibleForUser(Builder $query, User $user): Builder
+    {
+        return $query->when($user->role?->name === 'reporter', fn($q) => $q->where('assignee_id', '=', $user->id));
+    }
 }
